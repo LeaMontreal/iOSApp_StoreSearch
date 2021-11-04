@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="SearchResultCell" id="f6g-nt-tg2" customClass="SearchResultCell" customModule="StoreSearch" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="f6g-nt-tg2" id="xEx-jP-A6O">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="80"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" image="square.text.square" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="HgN-1i-O9a">
+                        <rect key="frame" x="16" y="11" width="60" height="58"/>
+                        <color key="tintColor" systemColor="systemGray2Color"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="60" id="899-TS-Dzp"/>
+                            <constraint firstAttribute="width" constant="60" id="UnA-ru-xge"/>
+                        </constraints>
+                        <preferredSymbolConfiguration key="preferredSymbolConfiguration" weight="thin"/>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="751" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OtH-Jz-qOF">
+                        <rect key="frame" x="84" y="16" width="275" height="22"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="18"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Artist Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zSm-4M-opp">
+                        <rect key="frame" x="84" y="44" width="275" height="18"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                        <color key="textColor" name="ArtistNameColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="HgN-1i-O9a" firstAttribute="top" secondItem="xEx-jP-A6O" secondAttribute="top" constant="10" id="2Lp-IU-hAl"/>
+                    <constraint firstItem="zSm-4M-opp" firstAttribute="top" secondItem="OtH-Jz-qOF" secondAttribute="bottom" constant="6" id="6re-12-61d"/>
+                    <constraint firstAttribute="bottom" secondItem="HgN-1i-O9a" secondAttribute="bottom" constant="10" id="EGl-B5-NSp"/>
+                    <constraint firstItem="OtH-Jz-qOF" firstAttribute="top" secondItem="xEx-jP-A6O" secondAttribute="top" constant="16" id="PT9-Vf-Je3"/>
+                    <constraint firstAttribute="trailing" secondItem="OtH-Jz-qOF" secondAttribute="trailing" constant="16" id="Ypu-DA-Saz"/>
+                    <constraint firstItem="OtH-Jz-qOF" firstAttribute="leading" secondItem="HgN-1i-O9a" secondAttribute="trailing" constant="8" symbolic="YES" id="d9q-QW-WeC"/>
+                    <constraint firstAttribute="trailing" secondItem="zSm-4M-opp" secondAttribute="trailing" constant="16" id="da1-Gt-Z9b"/>
+                    <constraint firstItem="HgN-1i-O9a" firstAttribute="leading" secondItem="xEx-jP-A6O" secondAttribute="leading" constant="16" id="eJc-o4-2tk"/>
+                    <constraint firstItem="zSm-4M-opp" firstAttribute="leading" secondItem="HgN-1i-O9a" secondAttribute="trailing" constant="8" symbolic="YES" id="rGX-e6-QMd"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="artistNameLabel" destination="zSm-4M-opp" id="yuw-Ig-u8d"/>
+                <outlet property="artworkImageView" destination="HgN-1i-O9a" id="hlw-qU-Oh0"/>
+                <outlet property="nameLabel" destination="OtH-Jz-qOF" id="eHw-DW-7Es"/>
+            </connections>
+            <point key="canvasLocation" x="320" y="5"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="square.text.square" catalog="system" width="128" height="114"/>
+        <namedColor name="ArtistNameColor">
+            <color red="0.0" green="0.0" blue="0.0" alpha="0.5" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemGray2Color">
+            <color red="0.68235294117647061" green="0.68235294117647061" blue="0.69803921568627447" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>
