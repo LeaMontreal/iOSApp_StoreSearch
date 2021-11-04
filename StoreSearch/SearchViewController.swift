@@ -41,6 +41,8 @@ class SearchViewController: UIViewController {
         // register NothingFoundCell
         nibCell = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
         tableView.register(nibCell, forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
+        
+        searchBar.becomeFirstResponder()
     }
 
 

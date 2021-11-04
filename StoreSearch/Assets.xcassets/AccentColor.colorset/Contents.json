@@ -1,15 +1,15 @@
 {
   "colors" : [
     {
-      "idiom" : "universal"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
+      "color" : {
+        "color-space" : "srgb",
+        "components" : {
+          "alpha" : "1.000",
+          "blue" : "80",
+          "green" : "80",
+          "red" : "10"
         }
-      ],
+      },
       "idiom" : "universal"
     }
   ],

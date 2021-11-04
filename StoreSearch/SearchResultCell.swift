@@ -15,7 +15,12 @@ class SearchResultCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
+        
         // Initialization code
+        // change the selected background of the cell
+        let selectedView = UIView(frame: CGRect.zero)
+        selectedView.backgroundColor = UIColor(named: "SearchBarColor")?.withAlphaComponent(0.5)
+        selectedBackgroundView = selectedView
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
