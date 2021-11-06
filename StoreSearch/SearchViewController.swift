@@ -59,23 +59,6 @@ class SearchViewController: UIViewController {
         let url = URL(string: urlString)
         return url!
     }
-    
-    // Get Data object from the data received from the server
-    func performStoreRequest(with url: URL) -> Data? {
-        do {
-//            return try String(contentsOf: url, encoding: String.Encoding.utf8)
-            return try Data(contentsOf: url)
-        }catch {
-            print("Download Error: \(error.localizedDescription)")
-            // TODO: not complete enough.
-            DispatchQueue.main.async {
-                self.isLoading = false
-                self.showNetworkError()
-                self.tableView.reloadData()
-            }
-            return nil
-        }
-    }
 
     func parse(data: Data) -> [SearchResult] {
         let decoder = JSONDecoder()
@@ -139,38 +122,41 @@ extension SearchViewController: UISearchBarDelegate {
             isLoading = true
             tableView.reloadData()
 
-//            print("TAG test result is: '\(test())'")
-            
-            let queue = DispatchQueue.global()
-            // download data in branch thread
-            queue.async {
-                if let data = self.performStoreRequest(with: url) {
-                    // use print() to make function ok, then output to TableView
-    //                let results = parse(data: data)
-    //                print("TAG Got Results :\(results)")
-                    self.searchResults = self.parse(data: data)
-                    
-                    // sort the results
-                    // option 1:
-    //                searchResults.sort {result1, result2 in
-    //                    return result1.name.localizedStandardCompare(result2.name) == .orderedAscending
-    //                }
-                    // option 2:
-    //                searchResults.sort {$0.name.localizedStandardCompare($1.name) == .orderedAscending}
-                    // option 3:
-    //                searchResults.sort {$0 < $1}
-                    // option 4:
-                    self.searchResults.sort(by: <)
-
-                    print("TAG DONE")
-                    // change UI in main thread
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                        self.tableView.reloadData()
+            let urlSession = URLSession.shared
+            let dataTask = urlSession.dataTask(with: url) {data, response, error in
+                if let error = error {
+                    print("TAG Failure! \(error.localizedDescription)")
+                }else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+//                    print("TAG Success! \(data!)")
+                    if let data = data {
+                        self.searchResults = self.parse(data: data)
+                        self.searchResults.sort(by: <)
+                        
+                        print("TAG dataTask Thread is Main Thread: " + (Thread.current.isMainThread ? "Yes" : "No"))
+                        
+                        DispatchQueue.main.async {
+                            print("TAG Current Thread is Main Thread: " + (Thread.current.isMainThread ? "Yes" : "No"))
+                            self.isLoading = false
+                            self.tableView.reloadData()
+                        }
+                        
+                        return
                     }
-                    return
+                }else {
+                    print("TAG Failure! \(response!)")
                 }
+                
+                DispatchQueue.main.async {
+                    self.hasSearched = false
+                    self.isLoading = false
+                    self.tableView.reloadData()
+                    self.showNetworkError()
+                }
+
             }
+            
+            // start data task, an asyncronous on a background thread
+            dataTask.resume()
         }
     }
     
