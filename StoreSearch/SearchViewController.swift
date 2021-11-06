@@ -15,12 +15,14 @@ class SearchViewController: UIViewController {
     // fake results
     var searchResults = [SearchResult]()
     var hasSearched = false
+    var isLoading = false
     
     // define constant for reusable cell identifier
     struct TableView {
         struct CellIdentifiers {
             static let searchResultCell = "SearchResultCell"
             static let nothingFoundCell = "NothingFoundCell"
+            static let loadingCell = "LoadingCell"
         }
     }
     
@@ -42,6 +44,10 @@ class SearchViewController: UIViewController {
         nibCell = UINib(nibName: TableView.CellIdentifiers.nothingFoundCell, bundle: nil)
         tableView.register(nibCell, forCellReuseIdentifier: TableView.CellIdentifiers.nothingFoundCell)
         
+        // register LoadingCell
+        nibCell = UINib(nibName: TableView.CellIdentifiers.loadingCell, bundle: nil)
+        tableView.register(nibCell, forCellReuseIdentifier: TableView.CellIdentifiers.loadingCell)
+        
         searchBar.becomeFirstResponder()
     }
 
@@ -49,7 +55,7 @@ class SearchViewController: UIViewController {
     func itunesURL(searchText: String) -> URL {
         // encode special character, like space, < >, in the searchText
         let encodedText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        let urlString = String(format: "https://itunes.apple.com/search?term=%@", encodedText)
+        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
         let url = URL(string: urlString)
         return url!
     }
@@ -61,7 +67,12 @@ class SearchViewController: UIViewController {
             return try Data(contentsOf: url)
         }catch {
             print("Download Error: \(error.localizedDescription)")
-            showNetworkError()
+            // TODO: not complete enough.
+            DispatchQueue.main.async {
+                self.isLoading = false
+                self.showNetworkError()
+                self.tableView.reloadData()
+            }
             return nil
         }
     }
@@ -125,28 +136,40 @@ extension SearchViewController: UISearchBarDelegate {
             let url = itunesURL(searchText: searchBar.text!)
             print("TAG URL is: '\(url)'")
             hasSearched = true
+            isLoading = true
+            tableView.reloadData()
 
 //            print("TAG test result is: '\(test())'")
             
-            if let data = performStoreRequest(with: url) {
-                // use print() to make function ok, then output to TableView
-//                let results = parse(data: data)
-//                print("TAG Got Results :\(results)")
-                searchResults = parse(data: data)
-                
-                // sort the results
-                // option 1:
-//                searchResults.sort {result1, result2 in
-//                    return result1.name.localizedStandardCompare(result2.name) == .orderedAscending
-//                }
-                // option 2:
-//                searchResults.sort {$0.name.localizedStandardCompare($1.name) == .orderedAscending}
-                // option 3:
-//                searchResults.sort {$0 < $1}
-                // option 4:
-                searchResults.sort(by: <)
-                
-                tableView.reloadData()
+            let queue = DispatchQueue.global()
+            // download data in branch thread
+            queue.async {
+                if let data = self.performStoreRequest(with: url) {
+                    // use print() to make function ok, then output to TableView
+    //                let results = parse(data: data)
+    //                print("TAG Got Results :\(results)")
+                    self.searchResults = self.parse(data: data)
+                    
+                    // sort the results
+                    // option 1:
+    //                searchResults.sort {result1, result2 in
+    //                    return result1.name.localizedStandardCompare(result2.name) == .orderedAscending
+    //                }
+                    // option 2:
+    //                searchResults.sort {$0.name.localizedStandardCompare($1.name) == .orderedAscending}
+                    // option 3:
+    //                searchResults.sort {$0 < $1}
+                    // option 4:
+                    self.searchResults.sort(by: <)
+
+                    print("TAG DONE")
+                    // change UI in main thread
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.tableView.reloadData()
+                    }
+                    return
+                }
             }
         }
     }
@@ -157,13 +180,12 @@ extension SearchViewController: UISearchBarDelegate {
     }
 }
 
-
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     // note: here's no override keyword for func
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if !hasSearched {
             return 0
-        } else if searchResults.count == 0 {
+        } else if searchResults.count == 0 || isLoading == true {
             return 1
         }else {
             return searchResults.count
@@ -185,23 +207,33 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
 ////            print("TAG create a new default cell")
 //        }
                 
-        if searchResults.count == 0 {
-            return tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.nothingFoundCell, for: indexPath)
-        }else {
-            // change to real data with cell from nib file
-            let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
-
-            let searchResult = searchResults[indexPath.row]
-            cell.nameLabel.text = searchResult.name
-            //cell.artistNameLabel.text = searchResults[indexPath.row].artistName
-            if searchResult.artist.isEmpty {
-                cell.artistNameLabel.text = "Unknown"
-            }else {
-                cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artist, searchResult.type)
-            }
-            
+        if isLoading {
+            let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.loadingCell, for: indexPath)
+            let spinner = cell.viewWithTag(100) as! UIActivityIndicatorView
+            spinner.startAnimating()
+            print("TAG start spinner")
             return cell
+
+        }else {
+            if searchResults.count == 0 {
+                return tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.nothingFoundCell, for: indexPath)
+            }else {
+                // change to real data with cell from nib file
+                let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
+
+                let searchResult = searchResults[indexPath.row]
+                cell.nameLabel.text = searchResult.name
+                //cell.artistNameLabel.text = searchResults[indexPath.row].artistName
+                if searchResult.artist.isEmpty {
+                    cell.artistNameLabel.text = "Unknown"
+                }else {
+                    cell.artistNameLabel.text = String(format: "%@ (%@)", searchResult.artist, searchResult.type)
+                }
+                
+                return cell
+            }
         }
+        
     }
     
     // do not turn gray when user select cell
@@ -211,7 +243,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     // do not let user select (No Result Found) cell
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if searchResults.count == 0 {
+        if searchResults.count == 0 || isLoading == true {
             return nil
         }else {
             return indexPath
