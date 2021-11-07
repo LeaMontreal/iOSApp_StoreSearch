@@ -17,6 +17,8 @@ class SearchViewController: UIViewController {
     var hasSearched = false
     var isLoading = false
     
+    var dataTask: URLSessionDataTask?
+    
     // define constant for reusable cell identifier
     struct TableView {
         struct CellIdentifiers {
@@ -118,20 +120,26 @@ extension SearchViewController: UISearchBarDelegate {
 
             let url = itunesURL(searchText: searchBar.text!)
             print("TAG URL is: '\(url)'")
+            // cancel previous search task
+            dataTask?.cancel()
             hasSearched = true
             isLoading = true
             tableView.reloadData()
 
             let urlSession = URLSession.shared
-            let dataTask = urlSession.dataTask(with: url) {data, response, error in
-                if let error = error {
-                    print("TAG Failure! \(error.localizedDescription)")
+            dataTask = urlSession.dataTask(with: url) {data, response, error in
+                if let error = error as NSError?, error.code == -999 {
+                    return  // search was cancelled
+                    // TODO: why don't deal with other error?
+                    //print("TAG Failure! \(error.localizedDescription)")
+                
                 }else if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
 //                    print("TAG Success! \(data!)")
                     if let data = data {
                         self.searchResults = self.parse(data: data)
                         self.searchResults.sort(by: <)
                         
+                        // query if current closure run on main thread
                         print("TAG dataTask Thread is Main Thread: " + (Thread.current.isMainThread ? "Yes" : "No"))
                         
                         DispatchQueue.main.async {
@@ -156,7 +164,7 @@ extension SearchViewController: UISearchBarDelegate {
             }
             
             // start data task, an asyncronous on a background thread
-            dataTask.resume()
+            dataTask?.resume()
         }
     }
     
