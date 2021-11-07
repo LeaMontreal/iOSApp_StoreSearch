@@ -12,6 +12,13 @@ class SearchViewController: UIViewController {
     @IBOutlet var searchBar: UISearchBar!
     @IBOutlet var tableView: UITableView!
         
+    @IBOutlet weak var segmentedControl: UISegmentedControl!
+    
+    @IBAction func segmentChanged(_ sender: UISegmentedControl) {
+//        print("TAG Segment changed: \(sender.selectedSegmentIndex)")
+        performSearch()
+    }
+    
     // fake results
     var searchResults = [SearchResult]()
     var hasSearched = false
@@ -35,7 +42,7 @@ class SearchViewController: UIViewController {
         //
 //        tableView.contentInset = UIEdgeInsets(top: 56, left: 0, bottom: 0, right: 0)
         // after change the search bar attached with the status area, there's 6 points more vertical space
-        tableView.contentInset = UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0)
+        tableView.contentInset = UIEdgeInsets(top: 94, left: 0, bottom: 0, right: 0)
         
         // register nib file for cell, then when we call tableView.dequeueReusableCell(), will get a UITableViewCell from nib file
         // for nibName, we don't need filename with .xib, only filename is enough
@@ -54,10 +61,19 @@ class SearchViewController: UIViewController {
     }
 
     // MARK: - Helper Methods
-    func itunesURL(searchText: String) -> URL {
+    func itunesURL(searchText: String, category: Int) -> URL {
+        let kind: String
+        switch category {
+        case 1: kind = "musicTrack"
+        case 2: kind = "software"
+        case 3: kind = "ebook"
+        default: kind = ""
+        }
+        
         // encode special character, like space, < >, in the searchText
         let encodedText = searchText.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)!
-        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
+//        let urlString = String(format: "https://itunes.apple.com/search?term=%@&limit=200", encodedText)
+        let urlString = "https://itunes.apple.com/search?" + "term=\(encodedText)&limit=200&entity=\(kind)"
         let url = URL(string: urlString)
         return url!
     }
@@ -101,6 +117,10 @@ class SearchViewController: UIViewController {
 // MARK: Search Bar Delegate
 extension SearchViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        performSearch()
+    }
+    
+    func performSearch() {
 
         // do not need the fake data
 //        if searchBar.text != "Justin bieber" {
@@ -118,7 +138,7 @@ extension SearchViewController: UISearchBarDelegate {
 
             searchResults = []
 
-            let url = itunesURL(searchText: searchBar.text!)
+            let url = itunesURL(searchText: searchBar.text!, category: self.segmentedControl.selectedSegmentIndex)
             print("TAG URL is: '\(url)'")
             // cancel previous search task
             dataTask?.cancel()
