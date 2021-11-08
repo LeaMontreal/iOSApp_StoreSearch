@@ -29,6 +29,13 @@ class DetailViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        
+        // draw gradient background
+        view.backgroundColor = UIColor.clear
+        let dimmingView = GradientView(frame: CGRect.zero)
+        dimmingView.frame = view.bounds
+        view.insertSubview(dimmingView, at: 0)
+        
         // change the popupView into a rounded corner rectangle
         // my confusion: it seems not the effect we want, why?
         popupView.layer.cornerRadius = 10
