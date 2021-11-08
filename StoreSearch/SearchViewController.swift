@@ -66,6 +66,10 @@ class SearchViewController: UIViewController {
             //segue.destination.modalPresentationStyle = .overFullScreen
             // pageSheet is the default style, in this style, the pop-up view can be dismissed by swiping from the top
             segue.destination.modalPresentationStyle = .pageSheet
+            
+            let indexPath = sender as! IndexPath
+            let controller = segue.destination as! DetailViewController
+            controller.searchResult = self.searchResults[indexPath.row]
         }
     }
     

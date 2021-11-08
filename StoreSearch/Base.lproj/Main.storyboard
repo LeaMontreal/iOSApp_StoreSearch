@@ -172,6 +172,9 @@
                                                             <backgroundConfiguration key="background" image="PriceButton"/>
                                                             <fontDescription key="titleFontDescription" type="boldSystem" pointSize="20"/>
                                                         </buttonConfiguration>
+                                                        <connections>
+                                                            <action selector="openInStore" destination="1a7-FS-9QE" eventType="touchUpInside" id="ZEC-Kn-W8W"/>
+                                                        </connections>
                                                     </button>
                                                 </subviews>
                                             </stackView>

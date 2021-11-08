@@ -17,6 +17,14 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var kindLabel: UILabel!
     @IBOutlet weak var priceButton: UIButton!
 
+    var searchResult: SearchResult!
+    var downloadTask: URLSessionDownloadTask?
+
+    deinit {
+        print("DetailViewController deinit \(self)")
+        downloadTask?.cancel()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -31,8 +39,40 @@ class DetailViewController: UIViewController {
         gestureRecognizer.delegate = self
         view.addGestureRecognizer(gestureRecognizer)
 //        print("TAG DetailViewController viewDidLoad()...")
+        
+        updateUI()
     }
     
+    // MARK: - Helper Methods
+    func updateUI() {
+        nameLabel.text = searchResult.name
+        if searchResult.artist.isEmpty {
+            artistNameLabel.text = "Unknown"
+        }else {
+            artistNameLabel.text = searchResult.artist
+        }
+        kindLabel.text = searchResult.type
+        genreLabel.text = searchResult.genre
+        
+        // show price
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = searchResult.currency
+        let priceText: String
+        if searchResult.price == 0 {
+            priceText = "Free"
+        }else if let text = formatter.string(from: searchResult.price as NSNumber) {
+            priceText = text
+        }else {
+            priceText = ""
+        }
+        priceButton.setTitle(priceText, for: .normal)
+        
+        // show image
+        if let urlImage = URL(string: searchResult.imageLarge) {
+            downloadTask = artworkImageView.loadImage(url: urlImage)
+        }
+    }
 
     /*
     // MARK: - Navigation
@@ -46,8 +86,17 @@ class DetailViewController: UIViewController {
 
     // MARK: - Actions
     @IBAction func close() {
-//        print("TAG DetailViewController close()...")
+        // when swipe to close this pop-up view, this close() func does not be invoked
+        // then cancel download task have to be done in deinit
+        print("TAG DetailViewController close()...")
+        
         dismiss(animated: true, completion: nil)
+    }
+    
+    @IBAction func openInStore() {
+        if let url = URL(string: searchResult.storeURL) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
     }
 }
 
