@@ -60,6 +60,15 @@ class SearchViewController: UIViewController {
         searchBar.becomeFirstResponder()
     }
 
+    // MARK: - Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowDetail" {
+            //segue.destination.modalPresentationStyle = .overFullScreen
+            // pageSheet is the default style, in this style, the pop-up view can be dismissed by swiping from the top
+            segue.destination.modalPresentationStyle = .pageSheet
+        }
+    }
+    
     // MARK: - Helper Methods
     func itunesURL(searchText: String, category: Int) -> URL {
         let kind: String
@@ -247,6 +256,9 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     // do not turn gray when user select cell
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        // show detail pop-up view
+        performSegue(withIdentifier: "ShowDetail", sender: indexPath)
     }
     
     // do not let user select (No Result Found) cell

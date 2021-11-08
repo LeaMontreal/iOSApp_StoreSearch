@@ -36,11 +36,12 @@ class SearchResultCell: UITableViewCell {
         super.prepareForReuse()
         
         // cancel pending download task
-        if let text = nameLabel.text {
-            print("TAG SearchResultCell prepareForReuse \(text)")
-        }else {
-            print("TAG SearchResultCell prepareForReuse No NameLabel")
-        }
+        // my confusion: nameLabel cannot be nil, nameLabel.text cannot neither, but why there's warning from Xcode
+//        if let text = nameLabel.text {
+//            print("TAG SearchResultCell prepareForReuse \(text)")
+//        }else {
+//            print("TAG SearchResultCell prepareForReuse No NameLabel")
+//        }
         downloadTask?.cancel()
         downloadTask = nil
     }
