@@ -20,6 +20,12 @@ class DetailViewController: UIViewController {
     var searchResult: SearchResult!
     var downloadTask: URLSessionDownloadTask?
 
+    // is invoked to load the view controller from the storyboard
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        transitioningDelegate = self
+    }
+    
     deinit {
         print("DetailViewController deinit \(self)")
         downloadTask?.cancel()
@@ -110,5 +116,15 @@ class DetailViewController: UIViewController {
 extension DetailViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         return touch.view == self.view
+    }
+}
+
+extension DetailViewController: UIViewControllerTransitioningDelegate {
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return BounceAnimationController()
+    }
+    
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return SlideOutAnimationController()
     }
 }
