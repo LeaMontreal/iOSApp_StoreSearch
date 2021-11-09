@@ -148,6 +148,7 @@ class SearchViewController: UIViewController {
         landscapeVC = storyboard!.instantiateViewController(withIdentifier: "LandscapeViewController") as? LandscapeViewController
         if let controller = landscapeVC {
             controller.view.frame = view.bounds
+            controller.view.alpha = 0
             
             // add one view controller to another view controller, is called View Controller Containment
             // 1. add the landscape view as a subView
@@ -155,16 +156,40 @@ class SearchViewController: UIViewController {
             // 2. tell SearchViewController that landscape controller is managing that part of the screen
             addChild(controller)
             // 3. tell landscape controller that it has a parent which is SearchViewController
-            controller.didMove(toParent: self)
+            // 3.(-1) add  crossfade transition animation
+            coordinator.animate(alongsideTransition: {
+                _ in
+                controller.view.alpha = 1
+                // hide keyboard
+                self.searchBar.resignFirstResponder()
+                // if the detail pop-up view openned, dismiss it
+                if self.presentedViewController != nil {
+                    self.dismiss(animated: true, completion: nil)
+                }
+            },
+                                completion: {   // completion closure is invoked after animate() finished
+                _ in
+                // 3. tell landscape controller that it has a parent which is SearchViewController
+                controller.didMove(toParent: self)
+            })
         }
     }
 
     func hideLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
         if let controller = landscapeVC {
             controller.willMove(toParent: nil)
-            controller.removeFromParent()
-            controller.view.removeFromSuperview()
-            landscapeVC = nil
+            
+            // add crossfade transition animation
+            coordinator.animate(alongsideTransition: {
+                _ in
+                controller.view.alpha = 0
+            },
+                                completion: {
+                _ in
+                controller.removeFromParent()
+                controller.view.removeFromSuperview()
+                self.landscapeVC = nil
+            })
         }
     }
 

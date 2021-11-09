@@ -20,6 +20,12 @@ class DetailViewController: UIViewController {
     var searchResult: SearchResult!
     var downloadTask: URLSessionDownloadTask?
 
+    enum AnimationStyle {
+        case slide
+        case fade
+    }
+    var dismissStyle = AnimationStyle.fade
+    
     // is invoked to load the view controller from the storyboard
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -101,8 +107,8 @@ class DetailViewController: UIViewController {
     @IBAction func close() {
         // when swipe to close this pop-up view, this close() func does not be invoked
         // then cancel download task have to be done in deinit
-        print("TAG DetailViewController close()...")
-        
+//        print("TAG DetailViewController close()...")
+        dismissStyle = AnimationStyle.slide
         dismiss(animated: true, completion: nil)
     }
     
@@ -125,6 +131,18 @@ extension DetailViewController: UIViewControllerTransitioningDelegate {
     }
     
     func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return SlideOutAnimationController()
+        // replaced by switch clause
+//        if dismissStyle == AnimationStyle.fade {
+//            return FadeOutAnimationController()
+//        }else {
+//            return SlideOutAnimationController()
+//        }
+        
+        switch dismissStyle {
+        case .fade:
+            return FadeOutAnimationController()
+        case .slide:
+            return SlideOutAnimationController()
+        }
     }
 }
