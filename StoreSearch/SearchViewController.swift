@@ -35,6 +35,8 @@ class SearchViewController: UIViewController {
         }
     }
     
+    var landscapeVC: LandscapeViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -60,6 +62,20 @@ class SearchViewController: UIViewController {
         searchBar.becomeFirstResponder()
     }
 
+    // invoked when trait collection for this view controller change
+    override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.willTransition(to: newCollection, with: coordinator)
+        
+        switch newCollection.verticalSizeClass {
+        case .compact:
+            showLandscape(with: coordinator)
+        case .regular,.unspecified:
+            hideLandscape(with: coordinator)
+        @unknown default:
+            break
+        }
+    }
+    
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowDetail" {
@@ -125,6 +141,33 @@ class SearchViewController: UIViewController {
         
         present(controller, animated: true, completion: nil)
     }
+
+    func showLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+        guard landscapeVC == nil else {return}
+        
+        landscapeVC = storyboard!.instantiateViewController(withIdentifier: "LandscapeViewController") as? LandscapeViewController
+        if let controller = landscapeVC {
+            controller.view.frame = view.bounds
+            
+            // add one view controller to another view controller, is called View Controller Containment
+            // 1. add the landscape view as a subView
+            view.addSubview(controller.view)
+            // 2. tell SearchViewController that landscape controller is managing that part of the screen
+            addChild(controller)
+            // 3. tell landscape controller that it has a parent which is SearchViewController
+            controller.didMove(toParent: self)
+        }
+    }
+
+    func hideLandscape(with coordinator: UIViewControllerTransitionCoordinator) {
+        if let controller = landscapeVC {
+            controller.willMove(toParent: nil)
+            controller.removeFromParent()
+            controller.view.removeFromSuperview()
+            landscapeVC = nil
+        }
+    }
+
 }
 
 // MARK: Search Bar Delegate
