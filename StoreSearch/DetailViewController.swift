@@ -41,7 +41,16 @@ class DetailViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+
+        // note: it's UITapGestureRecognizer
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(close))
+        gestureRecognizer.cancelsTouchesInView = false
+        gestureRecognizer.delegate = self
+        view.addGestureRecognizer(gestureRecognizer)
+//        print("TAG DetailViewController viewDidLoad()...")
         
+        updateUI()
+
         // draw gradient background
         view.backgroundColor = UIColor.clear
         let dimmingView = GradientView(frame: CGRect.zero)
@@ -51,15 +60,6 @@ class DetailViewController: UIViewController {
         // change the popupView into a rounded corner rectangle
         // my confusion: it seems not the effect we want, why?
         popupView.layer.cornerRadius = 10
-        
-        // note: it's UITapGestureRecognizer
-        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(close))
-        gestureRecognizer.cancelsTouchesInView = false
-        gestureRecognizer.delegate = self
-        view.addGestureRecognizer(gestureRecognizer)
-//        print("TAG DetailViewController viewDidLoad()...")
-        
-        updateUI()
     }
     
     // MARK: - Helper Methods
@@ -121,7 +121,14 @@ class DetailViewController: UIViewController {
 
 extension DetailViewController: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        return touch.view == self.view
+        if touch.view === self.view {
+            print("TAG gestureRecognizer shouldReceive true")
+            return true
+        }else {
+            print("TAG gestureRecognizer shouldReceive false")
+            return false
+        }
+//        return touch.view === self.view
     }
 }
 

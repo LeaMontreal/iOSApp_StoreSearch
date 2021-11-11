@@ -11,8 +11,10 @@ class LandscapeViewController: UIViewController {
 
     @IBOutlet weak var scrollView: UIScrollView!    
     @IBOutlet weak var pageControl: UIPageControl!
-    
-    var searchResults = [SearchResult]()
+
+    // replaced by search
+//    var searchResults = [SearchResult]()
+    var search: Search!
     private var isFirstTime = true
     private var downloadTasks = [URLSessionDownloadTask]()
     
@@ -66,7 +68,7 @@ class LandscapeViewController: UIViewController {
         // note: (we can only know the view size after viewDidLoad() invoked)
         if isFirstTime {
             isFirstTime = false
-            tileButtons(searchResults)
+            tileButtons(search.searchResults)
         }
     }
 
@@ -99,7 +101,7 @@ class LandscapeViewController: UIViewController {
         var row = 0
         var column = 0
         var x = marginX
-        for (index, result) in searchResults.enumerated() {
+        for (index, result) in search.searchResults.enumerated() {
             // draw buttons in the first column, then the second...
             // system button for test
 //            let button = UIButton(type: .system)
@@ -135,7 +137,7 @@ class LandscapeViewController: UIViewController {
         }
         
         // set the contentSize of scrollView
-        let numPages = 1 + (searchResults.count - 1) / (rowsPerPage * columnsPerPage)
+        let numPages = 1 + (search.searchResults.count - 1) / (rowsPerPage * columnsPerPage)
         scrollView.contentSize = CGSize(width: CGFloat(numPages) * viewWidth, height: viewHeight)
         print("TAG Number of pages: \(numPages)")
         
