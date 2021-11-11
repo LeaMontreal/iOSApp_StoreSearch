@@ -81,13 +81,16 @@ class SearchViewController: UIViewController {
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowDetail" {
-            //segue.destination.modalPresentationStyle = .overFullScreen
-            // pageSheet is the default style, in this style, the pop-up view can be dismissed by swiping from the top
-            segue.destination.modalPresentationStyle = .pageSheet
-            
-            let indexPath = sender as! IndexPath
-            let controller = segue.destination as! DetailViewController
-            controller.searchResult = search.searchResults[indexPath.row]
+            if case .results(let list) = search.state {
+                //segue.destination.modalPresentationStyle = .overFullScreen
+                // pageSheet is the default style, in this style, the pop-up view can be dismissed by swiping from the top
+                segue.destination.modalPresentationStyle = .pageSheet
+                
+                let indexPath = sender as! IndexPath
+                let controller = segue.destination as! DetailViewController
+                controller.searchResult = list[indexPath.row]
+
+            }
         }
     }
     
@@ -180,13 +183,15 @@ extension SearchViewController: UISearchBarDelegate {
     }
     
     func performSearch() {
-        search.performSearch(for: searchBar.text!, category: segmentedControl.selectedSegmentIndex) {
-            isSuccess in
-            if !isSuccess {
-                self.showNetworkError()
+        if let category = Search.Category(rawValue: segmentedControl.selectedSegmentIndex) {
+            search.performSearch(for: searchBar.text!, category: category) {
+                isSuccess in
+                if !isSuccess {
+                    self.showNetworkError()
+                }
+                
+                self.tableView.reloadData()
             }
-            
-            self.tableView.reloadData()
         }
         
         tableView.reloadData()
@@ -202,14 +207,14 @@ extension SearchViewController: UISearchBarDelegate {
 extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     // note: here's no override keyword for func
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if !search.hasSearched {
-            return 0
-        } else if search.searchResults.count == 0 || search.isLoading == true {
+        switch search.state {
+        case .noResult, .loading:
             return 1
-        }else {
-            return search.searchResults.count
+        case .notSearchedYet:
+            return 0
+        case .results(let list):
+            return list.count
         }
-
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -225,28 +230,27 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
 //            cell = UITableViewCell(style: .subtitle, reuseIdentifier: cellIdentifier)
 ////            print("TAG create a new default cell")
 //        }
-                
-        if search.isLoading {
+
+        switch search.state {
+        case .loading:
             let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.loadingCell, for: indexPath)
             let spinner = cell.viewWithTag(100) as! UIActivityIndicatorView
             spinner.startAnimating()
             print("TAG start spinner")
             return cell
+        case.noResult:
+            return tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.nothingFoundCell, for: indexPath)
+        case .results(let list):
+            // change to real data with cell from nib file
+            let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
 
-        }else {
-            if search.searchResults.count == 0 {
-                return tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.nothingFoundCell, for: indexPath)
-            }else {
-                // change to real data with cell from nib file
-                let cell = tableView.dequeueReusableCell(withIdentifier: TableView.CellIdentifiers.searchResultCell, for: indexPath) as! SearchResultCell
-
-                let searchResult = search.searchResults[indexPath.row]
-                cell.configure(for: searchResult)
-                
-                return cell
-            }
+            let searchResult = list[indexPath.row]
+            cell.configure(for: searchResult)
+            
+            return cell
+        case .notSearchedYet:
+            fatalError("Should never get here")
         }
-        
     }
     
     // do not turn gray when user select cell
@@ -259,9 +263,10 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     // do not let user select (No Result Found) cell
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if search.searchResults.count == 0 || search.isLoading == true {
+        switch search.state {
+        case .notSearchedYet, .noResult, .loading:
             return nil
-        }else {
+        case .results:
             return indexPath
         }
     }

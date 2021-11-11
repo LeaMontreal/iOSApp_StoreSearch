@@ -129,6 +129,8 @@ extension DetailViewController: UIGestureRecognizerDelegate {
             return false
         }
 //        return touch.view === self.view
+// or
+//        return touch.view == self.view
     }
 }
 
