@@ -76,6 +76,7 @@ class Search {
                     if let data = data {
                         var searchResults = self.parse(data: data)
                         if searchResults.isEmpty {
+//                            print("TAG searchResults.count = \(searchResults.count)")
                             newState = .noResult
                         }else {
                             searchResults.sort(by: <)

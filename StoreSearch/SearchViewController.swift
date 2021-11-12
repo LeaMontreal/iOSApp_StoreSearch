@@ -39,9 +39,14 @@ class SearchViewController: UIViewController {
     
     var landscapeVC: LandscapeViewController?
     
+    // for iPad, split view for detail
+    weak var splitViewDetail :DetailViewController?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        title = NSLocalizedString("Search", comment: "split view primary button")
         
         //
 //        tableView.contentInset = UIEdgeInsets(top: 56, left: 0, bottom: 0, right: 0)
@@ -61,7 +66,11 @@ class SearchViewController: UIViewController {
         nibCell = UINib(nibName: TableView.CellIdentifiers.loadingCell, bundle: nil)
         tableView.register(nibCell, forCellReuseIdentifier: TableView.CellIdentifiers.loadingCell)
         
-        searchBar.becomeFirstResponder()
+        // for iPad, searchBar will not be the first responder
+        if UIDevice.current.userInterfaceIdiom != .pad
+        {
+            searchBar.becomeFirstResponder()
+        }
     }
 
     // invoked when trait collection for this view controller change
@@ -78,6 +87,13 @@ class SearchViewController: UIViewController {
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        // for iPhone, hide the navigation bar
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            navigationController?.navigationBar.isHidden = true
+        }
+    }
+    
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowDetail" {
@@ -89,7 +105,7 @@ class SearchViewController: UIViewController {
                 let indexPath = sender as! IndexPath
                 let controller = segue.destination as! DetailViewController
                 controller.searchResult = list[indexPath.row]
-
+                controller.isPopUp = true
             }
         }
     }
@@ -174,6 +190,15 @@ class SearchViewController: UIViewController {
         }
     }
 
+    private func hidePrimaryPane() {
+        UIView.animate(withDuration: 0.25,
+                       animations: {
+            self.splitViewController!.preferredDisplayMode = .secondaryOnly
+        },
+                       completion: { _ in
+            self.splitViewController!.preferredDisplayMode = .automatic
+        })
+    }
 }
 
 // MARK: Search Bar Delegate
@@ -255,10 +280,25 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
     
     // do not turn gray when user select cell
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
+        searchBar.resignFirstResponder()
         
-        // show detail pop-up view
-        performSegue(withIdentifier: "ShowDetail", sender: indexPath)
+        // for iPhone, pop-up detail view
+        if view.window!.rootViewController!.traitCollection.horizontalSizeClass == .compact {
+            tableView.deselectRow(at: indexPath, animated: true)
+            
+            // show detail pop-up view
+            performSegue(withIdentifier: "ShowDetail", sender: indexPath)
+        // for iPad, pass search result to split detail view
+        }else {
+            if case .results(let list) = search.state {
+                splitViewDetail?.searchResult = list[indexPath.row]
+            }
+            
+            // for iPad portrait, hide search view after select a row
+            if self.splitViewController!.displayMode != .oneBesideSecondary {
+                hidePrimaryPane()
+            }
+        }
     }
     
     // do not let user select (No Result Found) cell

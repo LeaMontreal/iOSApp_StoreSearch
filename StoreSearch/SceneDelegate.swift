@@ -11,12 +11,30 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
+    // MARK: - Properties
+    var splitVC: UISplitViewController {
+        return window!.rootViewController as! UISplitViewController
+    }
+    var searchVC: SearchViewController {
+        let navigator = splitVC.viewControllers.first as! UINavigationController
+        return navigator.viewControllers.first as! SearchViewController
+    }
+    var detailVC: DetailViewController {
+        let navigator = splitVC.viewControllers.last as! UINavigationController
+        return navigator.viewControllers.first as! DetailViewController
+    }
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
+        
+        // initiate splitViewDetail for SearchViewController
+        searchVC.splitViewDetail = detailVC
+        
+        // register delegate for splitVC
+        splitVC.delegate = self
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -50,3 +68,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 }
 
+extension SceneDelegate: UISplitViewControllerDelegate {
+    // show which pane of the split view
+    func splitViewController(_ svc: UISplitViewController, topColumnForCollapsingToProposedTopColumn proposedTopColumn: UISplitViewController.Column) -> UISplitViewController.Column {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return .primary
+            // return UISplitViewController.Column.primary
+        }
+        
+        return proposedTopColumn
+    }
+}

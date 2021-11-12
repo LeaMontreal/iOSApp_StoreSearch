@@ -17,7 +17,15 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var kindLabel: UILabel!
     @IBOutlet weak var priceButton: UIButton!
 
-    var searchResult: SearchResult!
+    var searchResult: SearchResult! {
+        // for iPad, after searchResult be set a new value
+        didSet {
+            if isViewLoaded {
+                updateUI()
+            }
+        }
+    }
+    
     var downloadTask: URLSessionDownloadTask?
 
     enum AnimationStyle {
@@ -25,6 +33,7 @@ class DetailViewController: UIViewController {
         case fade
     }
     var dismissStyle = AnimationStyle.fade
+    var isPopUp = false
     
     // is invoked to load the view controller from the storyboard
     required init?(coder: NSCoder) {
@@ -42,28 +51,44 @@ class DetailViewController: UIViewController {
 
         // Do any additional setup after loading the view.
 
-        // note: it's UITapGestureRecognizer
-        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(close))
-        gestureRecognizer.cancelsTouchesInView = false
-        gestureRecognizer.delegate = self
-        view.addGestureRecognizer(gestureRecognizer)
-//        print("TAG DetailViewController viewDidLoad()...")
-        
+        if isPopUp {
+            // change the popupView into a rounded corner rectangle
+            // my confusion: it seems not the effect we want, why?
+            popupView.layer.cornerRadius = 10
+
+            // draw gradient background
+            view.backgroundColor = UIColor.clear
+            let dimmingView = GradientView(frame: CGRect.zero)
+            dimmingView.frame = view.bounds
+            view.insertSubview(dimmingView, at: 0)
+
+            // note: it's UITapGestureRecognizer
+            let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(close))
+            gestureRecognizer.cancelsTouchesInView = false
+            gestureRecognizer.delegate = self
+            view.addGestureRecognizer(gestureRecognizer)
+    //        print("TAG DetailViewController viewDidLoad()...")
+
+        }else {
+            // why background pattern doesn't show in iPad? -- my confusion
+            // it's a bug, I connected popupView property to the view of the Detail scene,
+            // then when popupView.isHidden = true, new backgroundColor is hidden too
+            view.backgroundColor = UIColor(patternImage: UIImage(named: "LandscapeBackground")!)
+            popupView.isHidden = true
+            
+            // will change later for localization
+            title = NSLocalizedString("StoreSearch", comment: "split view detail title")
+        }
+
         updateUI()
 
-        // draw gradient background
-        view.backgroundColor = UIColor.clear
-        let dimmingView = GradientView(frame: CGRect.zero)
-        dimmingView.frame = view.bounds
-        view.insertSubview(dimmingView, at: 0)
         
-        // change the popupView into a rounded corner rectangle
-        // my confusion: it seems not the effect we want, why?
-        popupView.layer.cornerRadius = 10
     }
     
     // MARK: - Helper Methods
     func updateUI() {
+        guard searchResult != nil else {return}
+        
         nameLabel.text = searchResult.name
         if searchResult.artist.isEmpty {
             artistNameLabel.text = "Unknown"
@@ -91,8 +116,26 @@ class DetailViewController: UIViewController {
         if let urlImage = URL(string: searchResult.imageLarge) {
             downloadTask = artworkImageView.loadImage(url: urlImage)
         }
+        
+        // for iPad, let popupView show
+        // TODO: this way the second pane will show quite abruptly, how to change make it show with animation?
+//        popupView.isHidden = false
+        showDetailPane()
     }
 
+    // the effect is not good enough, to be improved later...
+    func showDetailPane() {
+        UIView.animate(withDuration: 0.3,
+                       animations: {
+//            self.splitViewController!.preferredDisplayMode = .automatic
+            self.popupView.isHidden = false
+            self.popupView.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+        },
+                       completion: { _ in
+            self.popupView.transform = CGAffineTransform(scaleX: 1, y: 1)
+        })
+    }
+    
     /*
     // MARK: - Navigation
 

@@ -86,9 +86,12 @@ class LandscapeViewController: UIViewController {
         var rowsPerPage = 0
         var marginX: CGFloat = 0
         var marginY: CGFloat = 0
-        let viewWidth = scrollView.bounds.size.width
-        let viewHeight = scrollView.bounds.size.height
-        
+        // use UIScreen.main instead of scrollView to get whole screen size
+//        let viewWidth = scrollView.bounds.size.width
+//        let viewHeight = scrollView.bounds.size.height
+        let viewWidth = UIScreen.main.bounds.size.width
+        let viewHeight = UIScreen.main.bounds.size.height
+
         columnsPerPage = Int(viewWidth/itemWidth)
         rowsPerPage = Int(viewHeight/itemHeight)
         
