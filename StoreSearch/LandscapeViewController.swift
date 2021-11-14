@@ -52,6 +52,7 @@ class LandscapeViewController: UIViewController {
         pageControl.numberOfPages = 0
     }
     
+    // invoked after viewDidLoad()
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
@@ -70,8 +71,12 @@ class LandscapeViewController: UIViewController {
             isFirstTime = false
             
             switch search.state {
-            case .notSearchedYet, .loading, .noResult:
+            case .notSearchedYet:
                 break
+            case .noResult:
+                showNothingFoundLabel()
+            case .loading:
+                showSpinner()
             case .results(let list):
                 tileButtons(list)
             }
@@ -96,6 +101,7 @@ class LandscapeViewController: UIViewController {
         rowsPerPage = Int(viewHeight/itemHeight)
         
         print("TAG \(rowsPerPage) rows per page, \(columnsPerPage) columns per page")
+        print("TAG scrollView.bounds.midX= \(scrollView.bounds.midX)")
         
         marginX = (viewWidth - itemWidth * CGFloat(columnsPerPage)) * 0.5
         marginY = (viewHeight - itemHeight * CGFloat(rowsPerPage)) * 0.5
@@ -126,6 +132,10 @@ class LandscapeViewController: UIViewController {
             button.frame = CGRect(x: x + paddingHorz,
                                   y: marginY + paddingVert + CGFloat(row) * itemHeight,
                                   width: buttonWidth, height: buttonHeight)
+
+            // add target action func
+            button.tag = 2000 + index
+            button.addTarget(self, action: #selector(buttonPressed(_:)), for: UIControl.Event.touchUpInside)
             
             //
             scrollView.addSubview(button)
@@ -176,15 +186,67 @@ class LandscapeViewController: UIViewController {
         }
     }
     
-    /*
+    private func showSpinner() {
+        let spinner = UIActivityIndicatorView(style: .large)
+        // add 0.5 to make the coordinate whole number, if the coordinate is fractional, the spinner looks blur
+//        spinner.center = CGPoint(x: scrollView.bounds.midX + 0.5, y: scrollView.bounds.midY + 0.5)
+        spinner.center = CGPoint(x: scrollView.bounds.midX, y: scrollView.bounds.midY)
+        // set tag in order to cancel this spinner later
+        spinner.tag = 1000
+        view.addSubview(spinner)
+        spinner.startAnimating()
+    }
+    
+    private func hideSpinner() {
+        view.viewWithTag(1000)?.removeFromSuperview()
+    }
+    
+    private func showNothingFoundLabel() {
+        let label = UILabel(frame: CGRect.zero)
+        label.text = "Nothing Found"
+        label.textColor = UIColor.label
+        label.backgroundColor = UIColor.clear
+
+        label.sizeToFit()
+
+        var rect = label.frame
+        // make width and height even
+        rect.size.width = ceil(rect.size.width/2) * 2
+        rect.size.height = ceil(rect.size.height/2) * 2
+        label.frame = rect
+
+        label.center = CGPoint(x: scrollView.bounds.midX, y: scrollView.bounds.midY)
+        
+        view.addSubview(label)
+    }
+    
+    // MARK: - Helper Methods
+    func searchResultReceived() {
+        hideSpinner()
+        
+        switch search.state {
+        case .notSearchedYet, .loading:
+            break
+        case .noResult:
+            showNothingFoundLabel()
+        case .results(let list):
+            tileButtons(list)
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destination.
         // Pass the selected object to the new view controller.
+        if segue.identifier == "ShowDetail" {
+            if case .results(let list) = search.state {
+                let controller = segue.destination as! DetailViewController
+                controller.searchResult = list[(sender as! UIButton).tag - 2000]
+            }
+        }
     }
-    */
 
     // MARK: - Actions
     @IBAction func pageChanged(_ sender: UIPageControl) {
@@ -199,6 +261,13 @@ class LandscapeViewController: UIViewController {
             self.scrollView.contentOffset = CGPoint(x: self.scrollView.bounds.size.width * CGFloat(sender.currentPage), y: 0)
         },
                        completion: nil)
+    }
+    
+    // buttonPressed() will be connected with UIButton through code, not story board,
+    // then it doesn't need @IBAction annotation
+    // use @objc with #selector
+    @objc func buttonPressed(_ sender: UIButton) {
+        performSegue(withIdentifier: "ShowDetail", sender: sender)
     }
 }
 

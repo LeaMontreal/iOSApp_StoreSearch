@@ -93,7 +93,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="139" y="116"/>
+            <point key="canvasLocation" x="137" y="-39"/>
         </scene>
         <!--Landscape-->
         <scene sceneID="lOv-d9-UZm">
@@ -129,6 +129,7 @@
                     <connections>
                         <outlet property="pageControl" destination="aX5-Iv-eSe" id="OYO-PV-qUX"/>
                         <outlet property="scrollView" destination="I7q-5U-eVd" id="A1R-Hg-XcD"/>
+                        <segue destination="1a7-FS-9QE" kind="presentation" identifier="ShowDetail" id="jBt-fg-IlJ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="s1Z-E9-w7e" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

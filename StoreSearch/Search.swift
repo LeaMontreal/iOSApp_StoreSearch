@@ -64,6 +64,9 @@ class Search {
                 var isSuccess = false
                 var newState = State.notSearchedYet
                 
+                // fake bad network condition
+//                sleep(5)
+                
                 if let error = error as NSError?, error.code == -999 {
                     // error.code == -999 means previous search was cancelled, when user started new search
                     return

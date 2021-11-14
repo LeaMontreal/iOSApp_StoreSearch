@@ -180,6 +180,11 @@ class SearchViewController: UIViewController {
             coordinator.animate(alongsideTransition: {
                 _ in
                 controller.view.alpha = 0
+                
+                // dismiss detail pop-up view
+                if self.presentedViewController != nil {
+                    self.dismiss(animated: true, completion: nil)
+                }
             },
                                 completion: {
                 _ in
@@ -216,10 +221,13 @@ extension SearchViewController: UISearchBarDelegate {
                 }
                 
                 self.tableView.reloadData()
+                self.landscapeVC?.searchResultReceived()
             }
         }
         
         tableView.reloadData()
+        // add or not?
+        landscapeVC?.searchResultReceived()
         searchBar.resignFirstResponder()
     }
     
