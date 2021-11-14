@@ -83,7 +83,9 @@ class Search {
                             newState = .noResult
                         }else {
                             searchResults.sort(by: <)
-                            newState = .results(searchResults)
+                            newState = State.results(searchResults)
+                            // the same as:
+//                            newState = .results(searchResults)
                         }
                         
                         // query if current closure run on main thread

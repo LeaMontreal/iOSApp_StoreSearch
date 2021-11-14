@@ -301,7 +301,7 @@ extension SearchViewController: UITableViewDelegate, UITableViewDataSource {
             if case .results(let list) = search.state {
                 splitViewDetail?.searchResult = list[indexPath.row]
             }
-            
+                
             // for iPad portrait, hide search view after select a row
             if self.splitViewController!.displayMode != .oneBesideSecondary {
                 hidePrimaryPane()
